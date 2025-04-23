@@ -1,0 +1,6 @@
+Bootstrap: docker
+From: wzhou88/saige:1.3.0
+
+%runscript
+    echo "This container provides multiple tools: R, python, etc."
+    echo "Use exported wrapper scripts to run them."
