@@ -2,9 +2,8 @@
 Version=1.0
 Name=Module Manager
 Comment=GUI for managing Singularity-based modules
-Exec=python3 ./module_manager_gui.py
+Exec=python3 /usr/local/bin/module_manager_gui.py
 Icon=utilities-terminal
 Terminal=false
 Type=Application
 Categories=Utility;
-

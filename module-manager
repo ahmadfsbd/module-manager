@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Base paths
-MODULES_DIR="$HOME/tre-modules/modules"
+MODULES_DIR="/genesandhealth/library-red/modules"
 USER_BIN="$HOME/.local/share/modules/bin"
 LOADED_LIST="$HOME/.local/share/modules/loaded"
 
@@ -178,4 +178,4 @@ case "$1" in
         ;;
 esac
 
-
+# eof
