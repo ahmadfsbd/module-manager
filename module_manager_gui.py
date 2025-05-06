@@ -2,6 +2,7 @@ import os
 import subprocess
 import tkinter as tk
 from tkinter import ttk, messagebox
+import yaml
 
 MODULES_DIR = os.path.expanduser("/genesandhealth/library-red/modules")
 
@@ -58,8 +59,10 @@ def show_status():
 
 def update_loaded_list():
     output = run_command("list")
+    loaded_text.config(state='normal')
     loaded_text.delete(1.0, tk.END)
     loaded_text.insert(tk.END, output)
+    loaded_text.config(state='disabled')
 
 def filter_modules(*args):
     query = search_var.get().lower()
@@ -68,37 +71,73 @@ def filter_modules(*args):
         if query in module.lower():
             module_listbox.insert(tk.END, module)
 
-# GUI setup
+def show_description(event):
+    module = get_selected_module()
+    if not module:
+        return
+    meta_file = os.path.join(MODULES_DIR, module, "meta.yaml")
+    if os.path.exists(meta_file):
+        try:
+            with open(meta_file, 'r') as f:
+                data = yaml.safe_load(f)
+            desc = yaml.dump(data, sort_keys=False, allow_unicode=True)
+        except Exception as e:
+            desc = f"Failed to load meta.yaml: {e}"
+    else:
+        desc = "No meta.yaml found."
+    desc_text.config(state='normal')
+    desc_text.delete(1.0, tk.END)
+    desc_text.insert(tk.END, desc)
+    desc_text.config(state='disabled')
+
+# --- GUI SETUP ---
+
 root = tk.Tk()
 root.title("Module Manager")
+root.geometry("1000x700")
 
-# Load all modules initially
+# Scrollable Main Canvas
+main_canvas = tk.Canvas(root)
+main_frame = tk.Frame(main_canvas)
+vsb = tk.Scrollbar(root, orient="vertical", command=main_canvas.yview)
+main_canvas.configure(yscrollcommand=vsb.set)
+
+vsb.pack(side="right", fill="y")
+main_canvas.pack(side="left", fill="both", expand=True)
+main_canvas.create_window((0, 0), window=main_frame, anchor="nw")
+
+def on_configure(event):
+    main_canvas.configure(scrollregion=main_canvas.bbox("all"))
+
+main_frame.bind("<Configure>", on_configure)
+
+# Load all modules
 all_modules = get_modules()
 
-# Search Field
-tk.Label(root, text="Search Modules:").grid(row=0, column=0, sticky="w")
+# Search
+tk.Label(main_frame, text="Search Modules:").grid(row=0, column=0, sticky="w")
 search_var = tk.StringVar()
 search_var.trace_add("write", filter_modules)
-search_entry = tk.Entry(root, textvariable=search_var, width=30)
-search_entry.grid(row=0, column=1, columnspan=2, sticky="we", padx=5, pady=2)
+tk.Entry(main_frame, textvariable=search_var, width=40).grid(row=0, column=1, columnspan=2, sticky="we", padx=5, pady=2)
 
-# Scrollable listbox for modules
-tk.Label(root, text="Available Modules:").grid(row=1, column=0, sticky="w")
-module_frame = tk.Frame(root)
-module_frame.grid(row=2, column=0, rowspan=3, sticky="ns")
+# Module list
+tk.Label(main_frame, text="Available Modules:").grid(row=1, column=0, sticky="w")
+module_frame = tk.Frame(main_frame)
+module_frame.grid(row=2, column=0, rowspan=4, sticky="ns")
 
 module_scrollbar = tk.Scrollbar(module_frame)
 module_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-module_listbox = tk.Listbox(module_frame, height=15, width=30, exportselection=False, yscrollcommand=module_scrollbar.set)
+module_listbox = tk.Listbox(module_frame, height=15, width=35, exportselection=False, yscrollcommand=module_scrollbar.set)
 for module in all_modules:
     module_listbox.insert(tk.END, module)
 module_listbox.pack(side=tk.LEFT, fill=tk.BOTH)
+module_listbox.bind("<<ListboxSelect>>", show_description)
 
 module_scrollbar.config(command=module_listbox.yview)
 
 # Buttons
-button_frame = tk.Frame(root)
+button_frame = tk.Frame(main_frame)
 button_frame.grid(row=2, column=1, columnspan=2, sticky="nsew")
 
 tk.Button(button_frame, text="Load", command=load).grid(row=0, column=0, sticky="we", padx=5, pady=2)
@@ -106,10 +145,37 @@ tk.Button(button_frame, text="Unload", command=unload).grid(row=1, column=0, sti
 tk.Button(button_frame, text="Restore All", command=restore).grid(row=2, column=0, sticky="we", padx=5, pady=2)
 tk.Button(button_frame, text="Status", command=show_status).grid(row=3, column=0, sticky="we", padx=5, pady=2)
 
-# Loaded modules display
-tk.Label(root, text="Available and Loaded Modules:").grid(row=5, column=0, columnspan=3, sticky="w")
-loaded_text = tk.Text(root, height=20, width=80)
-loaded_text.grid(row=6, column=0, columnspan=3, padx=5, pady=5)
+# Module Description Box (left side now)
+tk.Label(main_frame, text="Module Description:").grid(row=6, column=0, sticky="w")
+desc_frame = tk.Frame(main_frame)
+desc_frame.grid(row=7, column=0, sticky="nsew")
+
+desc_scrollbar = tk.Scrollbar(desc_frame)
+desc_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+desc_text = tk.Text(desc_frame, height=15, width=60, wrap=tk.WORD, yscrollcommand=desc_scrollbar.set)
+desc_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+desc_scrollbar.config(command=desc_text.yview)
+desc_text.config(state='disabled')
+
+# Loaded Modules Box (right side now)
+tk.Label(main_frame, text="Loaded Modules:").grid(row=6, column=1, columnspan=2, sticky="w")
+loaded_frame = tk.Frame(main_frame)
+loaded_frame.grid(row=7, column=1, columnspan=2, sticky="nsew")
+
+loaded_scrollbar = tk.Scrollbar(loaded_frame)
+loaded_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+loaded_text = tk.Text(loaded_frame, height=15, width=80, wrap=tk.WORD, yscrollcommand=loaded_scrollbar.set)
+loaded_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+loaded_scrollbar.config(command=loaded_text.yview)
+loaded_text.config(state='disabled')
+
+# Configure resizing behavior
+for i in range(3):
+    main_frame.grid_columnconfigure(i, weight=1)
+
+main_frame.grid_rowconfigure(7, weight=1)
 
 update_loaded_list()
 root.mainloop()
