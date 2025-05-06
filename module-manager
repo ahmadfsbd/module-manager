@@ -8,11 +8,6 @@ LOADED_LIST="$HOME/.local/share/modules/loaded"
 mkdir -p "$USER_BIN"
 mkdir -p "$(dirname "$LOADED_LIST")"
 
-# Add USER_BIN to PATH if not already
-if [[ ":$PATH:" != *":$USER_BIN:"* ]]; then
-    export PATH="$USER_BIN:$PATH"
-fi
-
 load_module() {
     local module_name="$1"
     local module_path="$MODULES_DIR/$module_name"
