@@ -115,15 +115,15 @@ main_frame.bind("<Configure>", on_configure)
 all_modules = get_modules()
 
 # Search
-tk.Label(main_frame, text="Search Modules:").grid(row=0, column=0, sticky="w")
+tk.Label(main_frame, text="Search Modules:").grid(row=0, column=0, sticky="w", padx=5, pady=2)
 search_var = tk.StringVar()
 search_var.trace_add("write", filter_modules)
-tk.Entry(main_frame, textvariable=search_var, width=40).grid(row=0, column=1, columnspan=2, sticky="we", padx=5, pady=2)
+tk.Entry(main_frame, textvariable=search_var, width=25).grid(row=0, column=1, sticky="w", padx=5, pady=2)
 
 # Module list
-tk.Label(main_frame, text="Available Modules:").grid(row=1, column=0, sticky="w")
+tk.Label(main_frame, text="Available Modules:").grid(row=1, column=0, sticky="w", padx=5)
 module_frame = tk.Frame(main_frame)
-module_frame.grid(row=2, column=0, rowspan=4, sticky="ns")
+module_frame.grid(row=2, column=0, rowspan=4, sticky="ns", padx=5)
 
 module_scrollbar = tk.Scrollbar(module_frame)
 module_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -138,43 +138,42 @@ module_scrollbar.config(command=module_listbox.yview)
 
 # Buttons
 button_frame = tk.Frame(main_frame)
-button_frame.grid(row=2, column=1, columnspan=2, sticky="nsew")
+button_frame.grid(row=2, column=1, sticky="nsew", padx=5)
 
 tk.Button(button_frame, text="Load", command=load).grid(row=0, column=0, sticky="we", padx=5, pady=2)
 tk.Button(button_frame, text="Unload", command=unload).grid(row=1, column=0, sticky="we", padx=5, pady=2)
 tk.Button(button_frame, text="Restore All", command=restore).grid(row=2, column=0, sticky="we", padx=5, pady=2)
 tk.Button(button_frame, text="Status", command=show_status).grid(row=3, column=0, sticky="we", padx=5, pady=2)
 
-# Module Description Box (left side now)
-tk.Label(main_frame, text="Module Description:").grid(row=6, column=0, sticky="w")
+# Module Description Box (left)
+tk.Label(main_frame, text="Module Description:").grid(row=6, column=0, sticky="w", padx=5)
 desc_frame = tk.Frame(main_frame)
-desc_frame.grid(row=7, column=0, sticky="nsew")
+desc_frame.grid(row=7, column=0, sticky="nsew", padx=5, pady=5)
 
 desc_scrollbar = tk.Scrollbar(desc_frame)
 desc_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-desc_text = tk.Text(desc_frame, height=15, width=60, wrap=tk.WORD, yscrollcommand=desc_scrollbar.set)
+desc_text = tk.Text(desc_frame, height=15, width=55, wrap=tk.WORD, yscrollcommand=desc_scrollbar.set)
 desc_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 desc_scrollbar.config(command=desc_text.yview)
 desc_text.config(state='disabled')
 
-# Loaded Modules Box (right side now)
-tk.Label(main_frame, text="Loaded Modules:").grid(row=6, column=1, columnspan=2, sticky="w")
+# Loaded Modules Box (right)
+tk.Label(main_frame, text="Loaded Modules:").grid(row=6, column=1, sticky="w", padx=5)
 loaded_frame = tk.Frame(main_frame)
-loaded_frame.grid(row=7, column=1, columnspan=2, sticky="nsew")
+loaded_frame.grid(row=7, column=1, sticky="nsew", padx=5, pady=5)
 
 loaded_scrollbar = tk.Scrollbar(loaded_frame)
 loaded_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-loaded_text = tk.Text(loaded_frame, height=15, width=80, wrap=tk.WORD, yscrollcommand=loaded_scrollbar.set)
+loaded_text = tk.Text(loaded_frame, height=15, width=55, wrap=tk.WORD, yscrollcommand=loaded_scrollbar.set)
 loaded_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 loaded_scrollbar.config(command=loaded_text.yview)
 loaded_text.config(state='disabled')
 
 # Configure resizing behavior
-for i in range(3):
+for i in range(2):
     main_frame.grid_columnconfigure(i, weight=1)
-
 main_frame.grid_rowconfigure(7, weight=1)
 
 update_loaded_list()
