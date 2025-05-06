@@ -61,20 +61,37 @@ def update_loaded_list():
     loaded_text.delete(1.0, tk.END)
     loaded_text.insert(tk.END, output)
 
+def filter_modules(*args):
+    query = search_var.get().lower()
+    module_listbox.delete(0, tk.END)
+    for module in all_modules:
+        if query in module.lower():
+            module_listbox.insert(tk.END, module)
+
 # GUI setup
 root = tk.Tk()
 root.title("Module Manager")
 
+# Load all modules initially
+all_modules = get_modules()
+
+# Search Field
+tk.Label(root, text="Search Modules:").grid(row=0, column=0, sticky="w")
+search_var = tk.StringVar()
+search_var.trace_add("write", filter_modules)
+search_entry = tk.Entry(root, textvariable=search_var, width=30)
+search_entry.grid(row=0, column=1, columnspan=2, sticky="we", padx=5, pady=2)
+
 # Scrollable listbox for modules
-tk.Label(root, text="Available Modules:").grid(row=0, column=0, sticky="w")
+tk.Label(root, text="Available Modules:").grid(row=1, column=0, sticky="w")
 module_frame = tk.Frame(root)
-module_frame.grid(row=1, column=0, rowspan=3, sticky="ns")
+module_frame.grid(row=2, column=0, rowspan=3, sticky="ns")
 
 module_scrollbar = tk.Scrollbar(module_frame)
 module_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
 module_listbox = tk.Listbox(module_frame, height=15, width=30, exportselection=False, yscrollcommand=module_scrollbar.set)
-for module in get_modules():
+for module in all_modules:
     module_listbox.insert(tk.END, module)
 module_listbox.pack(side=tk.LEFT, fill=tk.BOTH)
 
@@ -82,7 +99,7 @@ module_scrollbar.config(command=module_listbox.yview)
 
 # Buttons
 button_frame = tk.Frame(root)
-button_frame.grid(row=1, column=1, columnspan=2, sticky="nsew")
+button_frame.grid(row=2, column=1, columnspan=2, sticky="nsew")
 
 tk.Button(button_frame, text="Load", command=load).grid(row=0, column=0, sticky="we", padx=5, pady=2)
 tk.Button(button_frame, text="Unload", command=unload).grid(row=1, column=0, sticky="we", padx=5, pady=2)
@@ -90,9 +107,9 @@ tk.Button(button_frame, text="Restore All", command=restore).grid(row=2, column=
 tk.Button(button_frame, text="Status", command=show_status).grid(row=3, column=0, sticky="we", padx=5, pady=2)
 
 # Loaded modules display
-tk.Label(root, text="Available and Loaded Modules:").grid(row=4, column=0, columnspan=3, sticky="w")
+tk.Label(root, text="Available and Loaded Modules:").grid(row=5, column=0, columnspan=3, sticky="w")
 loaded_text = tk.Text(root, height=20, width=80)
-loaded_text.grid(row=5, column=0, columnspan=3)
+loaded_text.grid(row=6, column=0, columnspan=3, padx=5, pady=5)
 
 update_loaded_list()
 root.mainloop()
