@@ -80,11 +80,30 @@ def show_description(event):
         try:
             with open(meta_file, 'r') as f:
                 data = yaml.safe_load(f)
-            desc = yaml.dump(data, sort_keys=False, allow_unicode=True)
+
+            # Initialize description string
+            desc = ""
+
+            # Exclude 'description' key and list packages and executables in a more readable format
+            if "description" in data:
+                desc += f"{data['description']}\n\n"
+            
+            if "packages" in data:
+                desc += "Packages Included:\n"
+                for package in data['packages']:
+                    desc += f"  - {package}\n"
+            
+            if "executables" in data:
+                desc += "\nCommands exported:\n"
+                for executable in data['executables']:
+                    desc += f"  - {executable}\n"
+                
         except Exception as e:
             desc = f"Failed to load meta.yaml: {e}"
     else:
         desc = "No meta.yaml found."
+    
+    # Update the text widget with the formatted description
     desc_text.config(state='normal')
     desc_text.delete(1.0, tk.END)
     desc_text.insert(tk.END, desc)
