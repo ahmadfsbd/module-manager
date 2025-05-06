@@ -94,7 +94,7 @@ def show_description(event):
                     desc += f"  - {package}\n"
             
             if "executables" in data:
-                desc += "\nCommands exported:\n"
+                desc += "\nCommands Exported:\n"
                 for executable in data['executables']:
                     desc += f"  - {executable}\n"
                 
@@ -137,7 +137,7 @@ all_modules = get_modules()
 tk.Label(main_frame, text="Search Modules:").grid(row=0, column=0, sticky="w", padx=5, pady=2)
 search_var = tk.StringVar()
 search_var.trace_add("write", filter_modules)
-tk.Entry(main_frame, textvariable=search_var, width=25).grid(row=0, column=1, sticky="w", padx=5, pady=2)
+tk.Entry(main_frame, textvariable=search_var, width=35).grid(row=0, column=1, sticky="w", padx=5, pady=2)
 
 # Module list
 tk.Label(main_frame, text="Available Modules:").grid(row=1, column=0, sticky="w", padx=5)
@@ -185,7 +185,7 @@ loaded_frame.grid(row=7, column=1, sticky="nsew", padx=5, pady=5)
 loaded_scrollbar = tk.Scrollbar(loaded_frame)
 loaded_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-loaded_text = tk.Text(loaded_frame, height=15, width=55, wrap=tk.WORD, yscrollcommand=loaded_scrollbar.set)
+loaded_text = tk.Text(loaded_frame, height=15, width=35, wrap=tk.WORD, yscrollcommand=loaded_scrollbar.set)
 loaded_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 loaded_scrollbar.config(command=loaded_text.yview)
 loaded_text.config(state='disabled')
