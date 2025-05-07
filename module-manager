@@ -161,6 +161,27 @@ status_module() {
     fi
 }
 
+unload_all() {
+    if [[ ! -s "$LOADED_LIST" ]]; then
+        echo "No modules are currently loaded."
+        return 0
+    fi
+
+    echo "Unloading all modules..."
+    
+    # Display what is being unloaded
+    echo "Modules to unload:"
+    cat "$LOADED_LIST" | sed 's/^/ - /'
+
+    # Clear loaded list
+    > "$LOADED_LIST"
+
+    # Remove all exported command wrappers
+    rm -f "$USER_BIN"/*
+
+    echo "All modules have been unloaded and command wrappers removed."
+}
+
 # --- Entry point ---
 case "$1" in
     load)
@@ -181,8 +202,11 @@ case "$1" in
     status)
         status_module "$2"
         ;;
+    unload-all)
+        unload_all
+        ;;
     *)
-        echo "Usage: $0 {load|unload|restore|list-available|list-loaded|status} [module_name]"
+        echo "Usage: $0 {load|unload|restore|list-available|list-loaded|status|unload-all} [module_name]"
         ;;
 esac
 
