@@ -57,6 +57,13 @@ def show_status():
     output = run_command("status", module)
     messagebox.showinfo("Module Status", output)
 
+def unload_all():
+    if not messagebox.askyesno("Confirm", "Are you sure you want to unload all modules?"):
+        return
+    output = run_command("unload-all")
+    messagebox.showinfo("Unload All Modules", output)
+    update_loaded_list()
+
 def update_loaded_list():
     output = run_command("list-loaded")
     loaded_text.config(state='normal')
@@ -161,8 +168,9 @@ button_frame.grid(row=2, column=1, sticky="nsew", padx=5)
 
 tk.Button(button_frame, text="Load", command=load).grid(row=0, column=0, sticky="we", padx=5, pady=2)
 tk.Button(button_frame, text="Unload", command=unload).grid(row=1, column=0, sticky="we", padx=5, pady=2)
-tk.Button(button_frame, text="Restore All", command=restore).grid(row=2, column=0, sticky="we", padx=5, pady=2)
-tk.Button(button_frame, text="Status", command=show_status).grid(row=3, column=0, sticky="we", padx=5, pady=2)
+tk.Button(button_frame, text="Status", command=show_status).grid(row=2, column=0, sticky="we", padx=5, pady=2)
+tk.Button(button_frame, text="Restore All", command=restore).grid(row=3, column=0, sticky="we", padx=5, pady=2)
+tk.Button(button_frame, text="Unload All", command=unload_all).grid(row=4, column=0, sticky="we", padx=5, pady=2)
 
 # Module Description Box (left)
 tk.Label(main_frame, text="Module Description:").grid(row=6, column=0, sticky="w", padx=5)
