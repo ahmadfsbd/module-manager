@@ -62,17 +62,27 @@ unload_module() {
         return 1
     fi
 
-    # Remove the exported command wrappers
-    local cmds
-    cmds=$(yq '.executables[]' "$meta")
-    for cmd in $cmds; do
-        rm -f "$USER_BIN/$cmd"
-    done
-
     # Remove module from loaded list using in-place sed
     sed -i '/^'"$module_name"'$/d' "$LOADED_LIST"
 
-    echo "Module '$module_name' unloaded."
+    # Remove all exported command wrappers
+    rm -f "$USER_BIN"/*
+
+    # Recreate command wrappers for all remaining loaded modules in order
+    while read -r mod; do
+        local mod_meta="$MODULES_DIR/$mod/meta.yaml"
+        if [[ -f "$mod_meta" ]]; then
+            yq -r '.executables[]' "$mod_meta" | while read -r cmd; do
+                cat > "$USER_BIN/$cmd" <<EOF
+#!/bin/bash
+exec singularity exec "$MODULES_DIR/$mod/image.sif" "$cmd" "\$@"
+EOF
+                chmod +x "$USER_BIN/$cmd"
+            done
+        fi
+    done < "$LOADED_LIST"
+
+    echo "Module '$module_name' unloaded and command wrappers updated."
 }
 
 restore_modules() {
