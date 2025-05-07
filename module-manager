@@ -93,8 +93,8 @@ list_available() {
     echo "Available modules:"
     echo "------------------"
     if [[ -d "$MODULES_DIR" ]]; then
-        for mod in "$MODULES_DIR"/*; do
-            [[ -d "$mod" ]] && echo "- $(basename "$mod")"
+        for mod in "$MODULES_DIR"/*/; do
+            echo "- $(basename "${mod%/}")"
         done
     else
         echo "No modules directory found."
