@@ -132,23 +132,23 @@ status_module() {
     echo "-------------------------------"
 
     if [[ -d "$module_path" ]]; then
-        echo "✅ Module exists in $MODULES_DIR"
+        echo "[OK] Module exists in $MODULES_DIR"
     else
-        echo "❌ Module does not exist in $MODULES_DIR"
+        echo "[X] Module does not exist in $MODULES_DIR"
         return 1
     fi
 
     if grep -Fxq "$module_name" "$LOADED_LIST" 2>/dev/null; then
-        echo "✅ Module is currently loaded"
+        echo "[LOADED] Module is currently loaded"
     else
-        echo "❌ Module is not loaded"
+        echo "[NOT LOADED] Module is not loaded"
     fi
 
     if [[ -f "$meta_file" ]]; then
-        echo "📝 Exported commands:"
+        echo "[INFO] Exported commands:"
         yq '.executables[]' "$meta_file" | sed 's/^/    └─ /'
     else
-        echo "⚠️ No meta.yaml found"
+        echo "[WARN] No meta.yaml found"
     fi
 }
 
