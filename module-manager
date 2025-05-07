@@ -90,7 +90,7 @@ restore_modules() {
     done < "$LOADED_LIST"
 }
 
-list_modules() {
+list_available() {
     echo "Available modules:"
     echo "------------------"
     if [[ -d "$MODULES_DIR" ]]; then
@@ -100,8 +100,9 @@ list_modules() {
     else
         echo "No modules directory found."
     fi
+}
 
-    echo ""
+list_loaded() {
     echo "Loaded modules:"
     echo "----------------"
     if [[ ! -s "$LOADED_LIST" ]]; then
@@ -162,14 +163,17 @@ case "$1" in
     restore)
         restore_modules
         ;;
-    list)
-        list_modules
+    list-available)
+        list_available
         ;;
+    list-loaded)
+	list_loaded
+	;;
     status)
         status_module "$2"
         ;;
     *)
-        echo "Usage: $0 {load|unload|restore|list|status} [module_name]"
+        echo "Usage: $0 {load|unload|restore|list-available|list-loaded|status} [module_name]"
         ;;
 esac
 

@@ -58,7 +58,7 @@ def show_status():
     messagebox.showinfo("Module Status", output)
 
 def update_loaded_list():
-    output = run_command("list")
+    output = run_command("list-loaded")
     loaded_text.config(state='normal')
     loaded_text.delete(1.0, tk.END)
     loaded_text.insert(tk.END, output)
