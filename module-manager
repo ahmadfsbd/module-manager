@@ -69,9 +69,8 @@ unload_module() {
         rm -f "$USER_BIN/$cmd"
     done
 
-    # Remove module from loaded list safely
-    grep -Fxv "$module_name" "$LOADED_LIST" > "${LOADED_LIST}.tmp"
-    mv "${LOADED_LIST}.tmp" "$LOADED_LIST"
+    # Remove module from loaded list using in-place sed
+    sed -i '/^'"$module_name"'$/d' "$LOADED_LIST"
 
     echo "Module '$module_name' unloaded."
 }
