@@ -1,0 +1,35 @@
+Bootstrap: docker
+From: amd64/alpine:3.14
+
+%post
+    apk add --no-cache \
+        wget git tar build-base gfortran cmake python3 \
+        zlib-dev boost-dev
+
+    ln -s /usr/bin/gfortran /usr/bin/f77
+    
+    # Download and extract BGEN
+    wget http://code.enkre.net/bgen/tarball/release/bgen.tgz
+    mkdir bgen
+    tar -xzf bgen.tgz -C bgen --strip-components=1
+    cd bgen
+
+    # Compile
+    python3 ./waf configure
+    python3 ./waf
+    cp build/apps/bgenix /usr/local/bin/
+
+    cd /
+    git clone https://github.com/rgcgithub/regenie.git
+    cd regenie
+ 
+    make BGEN_PATH=/bgen
+
+    cp regenie /usr/local/bin/
+
+%environment
+    export PATH=/usr/local/bin:$PATH
+
+%runscript
+    echo "This container provides multiple tools: R, python, etc."
+    echo "Use exported wrapper scripts to run them."
