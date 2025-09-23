@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Base paths
-MODULES_DIR="/genesandhealth/library-red/modules"
+MODULES_DIR="/genesandhealth/lmod/modules"
 USER_BIN="$HOME/.local/share/modules/bin"
 LOADED_LIST="$HOME/.local/share/modules/loaded"
 
@@ -16,7 +16,7 @@ load_module() {
 
     if grep -Fxq "$module_name" "$LOADED_LIST" 2>/dev/null; then
         echo "Module '$module_name' is already loaded."
-        return 1 
+        return 0
     fi
 
     if [[ ! -f "$sif" ]]; then
@@ -33,18 +33,38 @@ load_module() {
     echo "$module_name" >> "$LOADED_LIST"
 
     # Read executables from meta.yaml
+    local isR=false
     local cmds
     cmds=$(yq '.executables[]' "$meta")
     for cmd in $cmds; do
+        if [[ "$cmd" == "R" ]]; then
+            isR=true
+        fi
+
         script_path="$USER_BIN/$cmd"
         cat <<EOF > "$script_path"
 #!/bin/bash
-exec singularity exec --bind "/finngen:/genesandhealth" "$sif" "$cmd" "\$@"
+exec singularity exec --bind "/genesandhealth:/genesandhealth" "$sif" "$cmd" "\$@"
 EOF
         chmod +x "$script_path"
     done
 
+    if [[ "$isR" == true ]]; then
+        load_rstudio "$sif"
+    fi
+
     echo "Module '$module_name' loaded."
+}
+
+load_rstudio() {
+    local sif="$1"
+
+    script_path="$USER_BIN/rstudio"
+    cat <<EOF > "$script_path"
+#!/bin/bash
+singularity exec --overlay /genesandhealth/lmod/modules/rstudio.sqfs "$sif" /opt/rstudio/rstudio
+EOF
+    chmod +x "$script_path"
 }
 
 unload_module() {
@@ -54,7 +74,7 @@ unload_module() {
 
     if ! grep -Fxq "$module_name" "$LOADED_LIST" 2>/dev/null; then
         echo "Module '$module_name' is already unloaded."
-        return 1 
+        return 0
     fi
 
     if [[ ! -f "$meta" ]]; then
@@ -68,17 +88,29 @@ unload_module() {
     # Remove all exported command wrappers
     rm -f "$USER_BIN"/*
 
-    # Recreate command wrappers for all remaining loaded modules in order
     while read -r mod; do
-        local mod_meta="$MODULES_DIR/$mod/meta.yaml"
+        local mod_path="$MODULES_DIR/$mod"
+        local mod_meta="$mod_path/meta.yaml"
+        local mod_sif="$mod_path/singularity.sif"
+        local isR=false
+
         if [[ -f "$mod_meta" ]]; then
-            yq -r '.executables[]' "$mod_meta" | while read -r cmd; do
+            # Use process substitution to avoid subshell
+            while read -r cmd; do
+                if [[ "$cmd" == "R" ]]; then
+                    isR=true
+                fi
+
                 cat > "$USER_BIN/$cmd" <<EOF
 #!/bin/bash
-exec singularity exec "$MODULES_DIR/$mod/image.sif" "$cmd" "\$@"
+exec singularity exec "$mod_sif" "$cmd" "\$@"
 EOF
                 chmod +x "$USER_BIN/$cmd"
-            done
+            done < <(yq -r '.executables[]' "$mod_meta")
+
+            if [[ "$isR" == true ]]; then
+                load_rstudio "$mod_sif"
+            fi
         fi
     done < "$LOADED_LIST"
 
@@ -119,17 +151,23 @@ list_loaded() {
         return
     fi
 
-    while IFS= read -r module_name; do
+    # Read all module names into an array
+    mapfile -t modules < "$LOADED_LIST"
+
+    # Iterate in reverse order
+    for (( idx=${#modules[@]}-1; idx>=0; idx-- )); do
+        module_name="${modules[idx]}"
         echo "- $module_name"
         local meta_file="$MODULES_DIR/$module_name/meta.yaml"
         if [[ -f "$meta_file" ]]; then
-            while IFS= read -r cmd; do
+            # Use yq -r to get raw strings
+            yq -r '.executables[]' "$meta_file" | while IFS= read -r cmd; do
                 echo "    └─ $cmd"
-            done < <(yq '.executables[]' "$meta_file")
+            done
         else
             echo "    └─ (No meta.yaml found)"
         fi
-    done < "$LOADED_LIST"
+    done
 }
 
 status_module() {
@@ -209,4 +247,3 @@ case "$1" in
         echo "Usage: $0 {load|unload|restore|list-available|list-loaded|status|unload-all} [module_name]"
         ;;
 esac
-
