@@ -1,10 +1,12 @@
+#!/usr/bin/env python3
+
 import os
 import subprocess
 import tkinter as tk
 from tkinter import ttk, messagebox
 import yaml
 
-MODULES_DIR = os.path.expanduser("/genesandhealth/library-red/modules")
+MODULES_DIR = os.path.expanduser("/genesandhealth/lmod/modules")
 
 def get_modules():
     try:
@@ -120,7 +122,7 @@ def show_description(event):
 
 root = tk.Tk()
 root.title("Module Manager")
-root.geometry("1000x700")
+root.geometry("800x650")
 
 # Scrollable Main Canvas
 main_canvas = tk.Canvas(root)
@@ -205,4 +207,3 @@ main_frame.grid_rowconfigure(7, weight=1)
 
 update_loaded_list()
 root.mainloop()
-
